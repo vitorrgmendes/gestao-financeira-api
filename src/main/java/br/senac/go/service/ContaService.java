@@ -2,13 +2,22 @@ package br.senac.go.service;
 
 import br.senac.go.interfaces.IService;
 import br.senac.go.model.Conta;
+import br.senac.go.repository.ContaRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class ContaService implements IService<Conta,Integer>
 {
+    @Autowired //Injeção de dependência
+    ContaRepository contaRepository;
 
     @Override
     public Conta create(Conta entity)
@@ -16,7 +25,7 @@ public class ContaService implements IService<Conta,Integer>
         log.info("Método ContaService.create executado");
         log.debug(String.format("Método ContaService.create executado com o objeto: %s", entity.toString()));
 
-        return null;
+        return contaRepository.save(entity);
     }
 
     @Override
@@ -25,7 +34,19 @@ public class ContaService implements IService<Conta,Integer>
         log.info("Método ContaService.readById executado");
         log.debug(String.format("Método ContaService.readById executado com o objeto: %d", id));
 
-        return null;
+        //Conta contaPesquisada = contaRepository.findById(id).orElseGet(Conta::new);
+        Optional<Conta> contaPesquisada = contaRepository.findById(id);
+
+        return contaPesquisada.orElseGet(Conta::new);
+
+//        if (contaPesquisada.isPresent())
+//        {
+//            return contaPesquisada.get();
+//        }
+//        else
+//        {
+//            return new Conta();
+//        }
     }
 
     @Override
@@ -34,7 +55,11 @@ public class ContaService implements IService<Conta,Integer>
         log.info("Método ContaService.read executado");
         log.debug(String.format("Método ContaService.read executado com o objeto: %s", entity.toString()));
 
-        return null;
+        ExampleMatcher caseInsensitiveExampleMatcher = ExampleMatcher.matchingAll().withIgnoreCase();
+        Example<Conta> queryByExample = Example.of(entity,caseInsensitiveExampleMatcher);
+//      List<Conta> contas = contaRepository.findAll(queryByExample);
+
+        return contaRepository.findOne(queryByExample).orElseGet(Conta::new);
     }
 
     @Override
